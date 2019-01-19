@@ -62,7 +62,7 @@ Make a time series plot of average steps per interval across all days, by interv
 
 ```r
 avgint <- activity %>% group_by(interval) %>% summarize(steps=mean(steps,na.rm=TRUE))
-plot.ts(avgint,type="l",main="Average Steps by Time")
+plot.ts(avgint$interval,avgint$steps,type="l",main="Average Steps by Time")
 ```
 
 ![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png)

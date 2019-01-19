@@ -58,7 +58,7 @@ Make a time series plot of average steps per interval across all days, by interv
 
 ```{r fig.width=4, fig.height=4}
 avgint <- activity %>% group_by(interval) %>% summarize(steps=mean(steps,na.rm=TRUE))
-plot.ts(avgint,type="l",main="Average Steps by Time")
+plot.ts(avgint$interval,avgint$steps,type="l",main="Average Steps by Time")
 ```
 
 The maximum average steps per interval occurs at `r avgint$interval[avgint$steps==max(avgint$steps)]`.
