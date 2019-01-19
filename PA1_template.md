@@ -6,10 +6,7 @@ keep_md: TRUE
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-options(scipen=999)
-```
+
 
 ## What's going on?
 
@@ -25,7 +22,8 @@ The dataset is stored in a comma-separated-value (CSV) file and there are a tota
 
 ## Loading and preprocessing the data
 
-```{r}
+
+```r
 library(stringr)
 library(dplyr)
 activity <- read.csv("./repdata_data_activity/activity.csv")
@@ -36,67 +34,87 @@ activity$date <- as.Date(activity$date)
 
 Calculate total steps per day, produce a histogram of total steps:
 
-```{r}
+
+```r
 totperday <- activity %>% group_by(date) %>% summarize(steps=sum(steps,na.rm=TRUE))
 ```
 
-```{r fig.height=4, fig.width=4}
+
+```r
 hist(totperday$steps,main="Total Steps per Day",xlab="Steps per Day",col="green")
 ```
 
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png)
+
 Calculate and report the mean and median of the total number of steps taken per day:
 
-```{r}
+
+```r
 summarytot <- summary(totperday$steps)
 ```
 
-Mean total per day is `r summarytot[[4]]` and median total per day is `r summarytot[[3]]`.
+Mean total per day is 9354.2295082 and median total per day is 10395.
 
 ## What is the average daily activity pattern?
 
 Make a time series plot of average steps per interval across all days, by interval
 
-```{r fig.width=4, fig.height=4}
+
+```r
 avgint <- activity %>% group_by(interval) %>% summarize(steps=mean(steps,na.rm=TRUE))
 plot.ts(avgint,type="l",main="Average Steps by Time")
 ```
 
-The maximum average steps per interval occurs at `r avgint$interval[avgint$steps==max(avgint$steps)]`.
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png)
+
+The maximum average steps per interval occurs at 835.
 
 ## Imputing missing values
 
 How many rows have NAs?
 
-```{r}
+
+```r
 sum(is.na(activity$steps))
+```
+
+```
+## [1] 2304
 ```
 
 A reasonable way to fill in the missing data is to use the average for that interval across all days with data, as calculated above.
 
-```{r}
+
+```r
 actcomp <- activity %>% 
   mutate(stepscomp = ifelse(is.na(steps),avgint$steps[avgint$interval==interval],steps))
 ```
 
 How does this affect the mean and median total per day, as in the earlier questions?
 
-```{r fig.width=8,fig.height=4}
+
+```r
 totcomp <- actcomp %>% group_by(date) %>% summarize(steps=sum(stepscomp,na.rm=TRUE))
 
 par(mfrow=c(1,2))
 hist(totperday$steps,main="Total Steps per Day",xlab="Steps per Day",col="green",ylim=c(0,30))
 hist(totcomp$steps,main = "Total Steps per Day (Completed)",xlab = "Steps per Day (Completed)",col="blue",ylim=c(0,30))
+```
 
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png)
+
+```r
 sumtotcomp <- summary(totcomp$steps)
 ```
 
-Mean and median total adjusted steps per day are `r sumtotcomp[[4]]` and `r sumtotcomp[[3]]`, respectively. Completing the missing data has increased these values.
+Mean and median total adjusted steps per day are 9530.7244046 and 10439, respectively. Completing the missing data has increased these values.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
 Create a weekday/weekend indicator variable on the completed dataset.
 
-```{r fig.width=4,fig.height=8}
+
+```r
 totweek <- actcomp %>%
   mutate(wkind = ifelse(weekdays(date) %in% c("Saturday","Sunday"),"weekend","weekday")) %>%
   group_by(interval,wkind) %>%
@@ -106,5 +124,7 @@ par(mfrow=c(2,1))
 with(totweek[totweek$wkind=="weekend",],plot.ts(interval,steps,type="l",main="Weekend Average Steps per Interval"))
 with(totweek[totweek$wkind=="weekday",],plot.ts(interval,steps,type="l",main="Weekday Average Steps per Interval"))
 ```
+
+![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png)
 
 The weekdays seem to have more activity earlier in the day, while the weekend days are more spread out later into the day.
